@@ -9,6 +9,9 @@ from utils import (
 def ansatz_hess_single_layer(V, L, Z, U_tilde, perm):
 	"""
 		Computes single permutation hessian for the i==k.
+
+		TODO: Check for consistency with the gradient implementation. 
+
 	"""
 	G = np.zeros_like(V, dtype=complex)
 	for i in range(L//2):
@@ -46,6 +49,9 @@ def ansatz_hess_single_layer(V, L, Z, U_tilde, perm):
 
 
 def ansatz_grad_directed(V, L, Z, perm):
+	"""
+		TODO: Check for consistency with the gradient implementation. 
+	"""
 	assert V.shape == (8, 8)
 	assert Z.shape == (8, 8)
 	assert L % 2 == 0
@@ -231,6 +237,15 @@ def ansatz_hess_W(Vlist, Wlist, L, Z, k, cU, U, perms):
 def ansatz_hessian_matrix(Glist, cU, U, L, perms):
 	"""
 	Construct the Hessian matrix.
+
+	Major TODOs:
+	-> Modify the conj().T such that only cU is transposed, none of the
+	V,Ws are transposed but then at the end we transpose the individual
+	df/dG elements (after the sum, before the stacking).
+
+	-> Adding the additional Glist[j] @ at the projection stage, correct?
+
+	-> Have to check if the case k>l causes additional problems within hessian functions.
 	"""
 	Vlist = Glist[:len(perms)]
 	Wlist = Glist[len(perms):]
