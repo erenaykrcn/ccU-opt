@@ -95,11 +95,13 @@ def ansatz_grad_vector(Glist, cU, U, L, perms, flatten=True):
 	# Project onto tangent space.
 	if flatten:
 		return np.stack([antisymm_to_real( 
+			#Glist[j]@
 			antisymm(Glist[j].conj().T @ grad[j]))
 	        for j in range(len(grad))])\
 		.reshape(-1)
 	else:
 		return np.stack([antisymm_to_real(
+			#Glist[j]@
 			antisymm(Glist[j].conj().T @ grad[j]))
 	        for j in range(len(grad))])
 
