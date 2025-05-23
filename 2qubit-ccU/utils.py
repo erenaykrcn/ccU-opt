@@ -109,6 +109,34 @@ def polar_decomp(a):
 	return u @ vh, (vh.conj().T * s) @ vh
 
 
+def u4_basis():
+    basis = []
+
+    # Off-diagonal generators
+    for i in range(4):
+        for j in range(i+1, 4):
+            # Real symmetric: i(E_ij + E_ji)
+            M = np.zeros((4, 4), dtype=complex)
+            M[i, j] = 1
+            M[j, i] = 1
+            basis.append(1j * M)
+
+            # Imaginary antisymmetric: i(-iE_ij + iE_ji)
+            M = np.zeros((4, 4), dtype=complex)
+            M[i, j] = -1j
+            M[j, i] = 1j
+            basis.append(1j * M)
+
+    # Diagonal generators (including identity)
+    for i in range(4):
+        M = np.zeros((4, 4), dtype=complex)
+        M[i, i] = 1
+        basis.append(1j * M)
+
+    return basis  # 6 (real sym) + 6 (imag antisym) + 4 (diagonal) = 16
+
+
+
 
 
 

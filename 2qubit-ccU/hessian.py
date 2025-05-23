@@ -155,9 +155,6 @@ def ansatz_hess_V(Vlist, Wlist, L, Z, k, cU, U, perms, unprojected=False):
 		if not np.allclose(Z, project_unitary_tangent(V, Z)):
 			G -= 0.5 * (Z @ V.conj().T + V @ Z.conj().T) @ grad
 	dVlist[k] = G
-	
-	#assert np.iscomplexobj(dVlist[k])
-	#assert not np.allclose(np.imag(dVlist[k]), 0)
 	return np.stack(dVlist + dWlist)
 
 
@@ -248,9 +245,6 @@ def ansatz_hess_W(Vlist, Wlist, L, Z, k, cU, U, perms, unprojected=False):
 		if not np.allclose(Z, project_unitary_tangent(V, Z)):
 			G -= 0.5 * (Z @ V.conj().T + V @ Z.conj().T) @ grad
 	dWlist[k] = G
-
-	#assert np.iscomplexobj(dWlist[k])
-	#assert not np.allclose(np.imag(dWlist[k]), 0)
 	return np.stack(dVlist + dWlist)
 
 
@@ -279,7 +273,6 @@ def ansatz_hessian_matrix(Glist, cU, U, L, perms, flatten=True, unprojected=Fals
 				Z = np.zeros(16)
 				Z[j] = 1
 				Z = real_to_antisymm(np.reshape(Z, (4, 4)))
-
 
 			dVZj = ansatz_hess_V(Vlist, Wlist, L, Vlist[k] @ Z, k, cU, U, perms, unprojected=unprojected)
 			
