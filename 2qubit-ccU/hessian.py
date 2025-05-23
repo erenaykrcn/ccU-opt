@@ -69,7 +69,7 @@ def ansatz_grad_directed(V, L, Z, perm):
 	return G
 
 
-def ansatz_hess_V(Vlist, Wlist, L, Z, k, cU, U, perms):
+def ansatz_hess_V(Vlist, Wlist, L, Z, k, cU, U, perms, unprojected=False):
 	"""
 		Assumes the Z_k grad. evaluation happens in the V gates layer.
 		There are 4 possibilities for the i sum: i=k, i<k and i>k within 
@@ -94,7 +94,7 @@ def ansatz_hess_V(Vlist, Wlist, L, Z, k, cU, U, perms):
 			U_tilde = applyG_block(Vlist[j], L, perms[j]) @ U_tilde
 
 		dVi = ansatz_grad(Vlist[i], L, U_tilde, perms[i]).conj().T
-		dVlist[i] = project_unitary_tangent(Vlist[i], dVi) # TODO: Perhaps move the conj().T here from up?
+		dVlist[i] = dVi if unprojected else project_unitary_tangent(Vlist[i], dVi) # TODO: Perhaps move the conj().T here from up?
 
 	# i runs over Vlist, k>i
 	for i in range(k):
@@ -112,7 +112,7 @@ def ansatz_hess_V(Vlist, Wlist, L, Z, k, cU, U, perms):
 			U_tilde = applyG_block(Vlist[j], L, perms[j]) @ U_tilde
 
 		dVi = ansatz_grad(Vlist[i], L, U_tilde, perms[i]).conj().T
-		dVlist[i] = project_unitary_tangent(Vlist[i], dVi)
+		dVlist[i] = dVi if unprojected else project_unitary_tangent(Vlist[i], dVi)
 
 	# i runs within Wlist.
 	for i in range(len(Wlist)):
@@ -130,7 +130,7 @@ def ansatz_hess_V(Vlist, Wlist, L, Z, k, cU, U, perms):
 			U_tilde = applyG_block(Wlist[j], L, perms[j]) @ U_tilde
 		
 		dWi = ansatz_grad(Wlist[i], L, U_tilde, perms[i]).conj().T
-		dWlist[i] = project_unitary_tangent(Wlist[i], dWi)
+		dWlist[i] = dWi if unprojected else project_unitary_tangent(Wlist[i], dWi)
 
 	# i=k case.
 	i = k
@@ -147,19 +147,22 @@ def ansatz_hess_V(Vlist, Wlist, L, Z, k, cU, U, perms):
 	G = ansatz_hess_single_layer(Vlist[k], L, Z, U_tilde, perms[k]).conj().T
 
 	# Projection.
-	V = Vlist[k]
-	G = project_unitary_tangent(V, G)
-	grad = ansatz_grad(V, L, U_tilde, perms[k]).conj().T # TODO: Check this transpose.
-	G -= 0.5 * (Z @ grad.conj().T @ V + V @ grad.conj().T @ Z)
-	if not np.allclose(Z, project_unitary_tangent(V, Z)):
-		G -= 0.5 * (Z @ V.conj().T + V @ Z.conj().T) @ grad
+	if not unprojected:
+		V = Vlist[k]
+		G = project_unitary_tangent(V, G)
+		grad = ansatz_grad(V, L, U_tilde, perms[k]).conj().T # TODO: Check this transpose.
+		G -= 0.5 * (Z @ grad.conj().T @ V + V @ grad.conj().T @ Z)
+		if not np.allclose(Z, project_unitary_tangent(V, Z)):
+			G -= 0.5 * (Z @ V.conj().T + V @ Z.conj().T) @ grad
 	dVlist[k] = G
 	
+	#assert np.iscomplexobj(dVlist[k])
+	#assert not np.allclose(np.imag(dVlist[k]), 0)
 	return np.stack(dVlist + dWlist)
 
 
 
-def ansatz_hess_W(Vlist, Wlist, L, Z, k, cU, U, perms):
+def ansatz_hess_W(Vlist, Wlist, L, Z, k, cU, U, perms, unprojected=False):
 	"""
 		Assumes the Z_k grad. evaluation happens in the W gates layer.
 		There are 4 possibilities for the i sum: i=k, i<k and i>k within 
@@ -184,7 +187,7 @@ def ansatz_hess_W(Vlist, Wlist, L, Z, k, cU, U, perms):
 			U_tilde = applyG_block(Wlist[j], L, perms[j]) @ U_tilde
 
 		dWi = ansatz_grad(Wlist[i], L, U_tilde, perms[i]).conj().T
-		dWlist[i] = project_unitary_tangent(Wlist[i], dWi)
+		dWlist[i] = dWi if unprojected else  project_unitary_tangent(Wlist[i], dWi)
 
 	# i runs over Wlist, k>i.
 	for i in range(k):
@@ -202,7 +205,7 @@ def ansatz_hess_W(Vlist, Wlist, L, Z, k, cU, U, perms):
 			U_tilde = applyG_block(Wlist[j], L, perms[j]) @ U_tilde
 
 		dWi = ansatz_grad(Wlist[i], L, U_tilde, perms[i]).conj().T
-		dWlist[i] = project_unitary_tangent(Wlist[i], dWi)
+		dWlist[i] = dWi if unprojected else  project_unitary_tangent(Wlist[i], dWi)
 
 	# i runs within Vlist.
 	for i in range(len(Vlist)):
@@ -220,7 +223,7 @@ def ansatz_hess_W(Vlist, Wlist, L, Z, k, cU, U, perms):
 			U_tilde = applyG_block(Vlist[j], L, perms[j]) @ U_tilde
 		
 		dVi = ansatz_grad(Vlist[i], L, U_tilde, perms[i]).conj().T
-		dVlist[i] = project_unitary_tangent(Vlist[i], dVi)
+		dVlist[i] = dVi if unprojected else  project_unitary_tangent(Vlist[i], dVi)
 
 	# i=k case.
 
@@ -237,18 +240,21 @@ def ansatz_hess_W(Vlist, Wlist, L, Z, k, cU, U, perms):
 	G = ansatz_hess_single_layer(Wlist[k], L, Z, U_tilde, perms[k]).conj().T
 
 	# Projection.
-	V = Wlist[k]
-	G = project_unitary_tangent(V, G)
-	grad = ansatz_grad(V, L, U_tilde, perms[k]).conj().T # TODO: Check this transpose.
-	G -= 0.5 * (Z @ grad.conj().T @ V + V @ grad.conj().T @ Z)
-	if not np.allclose(Z, project_unitary_tangent(V, Z)):
-		G -= 0.5 * (Z @ V.conj().T + V @ Z.conj().T) @ grad
+	if not unprojected:
+		V = Wlist[k]
+		G = project_unitary_tangent(V, G)
+		grad = ansatz_grad(V, L, U_tilde, perms[k]).conj().T # TODO: Check this transpose.
+		G -= 0.5 * (Z @ grad.conj().T @ V + V @ grad.conj().T @ Z)
+		if not np.allclose(Z, project_unitary_tangent(V, Z)):
+			G -= 0.5 * (Z @ V.conj().T + V @ Z.conj().T) @ grad
 	dWlist[k] = G
 
+	#assert np.iscomplexobj(dWlist[k])
+	#assert not np.allclose(np.imag(dWlist[k]), 0)
 	return np.stack(dVlist + dWlist)
 
 
-def ansatz_hessian_matrix(Glist, cU, U, L, perms):
+def ansatz_hessian_matrix(Glist, cU, U, L, perms, flatten=True, unprojected=False):
 	"""
 	Construct the Hessian matrix.
 
@@ -256,8 +262,6 @@ def ansatz_hessian_matrix(Glist, cU, U, L, perms):
 	-> Modify the conj().T such that only cU is transposed, none of the
 	V,Ws are transposed but then at the end we transpose the individual
 	df/dG elements (after the sum, before the stacking).
-
-	-> Have to check if the case k>l causes additional problems within hessian functions.
 	"""
 	Vlist = Glist[:len(perms)]
 	Wlist = Glist[len(perms):]
@@ -268,27 +272,40 @@ def ansatz_hessian_matrix(Glist, cU, U, L, perms):
 	# k in V.
 	for k in range(eta):
 		for j in range(16):
-			# unit vector
-			Z = np.zeros(16)
-			Z[j] = 1
-			Z = real_to_antisymm(np.reshape(Z, (4, 4)))
+			if unprojected:
+				Z = np.zeros((4, 4), dtype=complex)
+				Z.flat[j] = 1.0
+			else:
+				Z = np.zeros(16)
+				Z[j] = 1
+				Z = real_to_antisymm(np.reshape(Z, (4, 4)))
 
-			dVZj = ansatz_hess_V(Vlist, Wlist, L, Vlist[k] @ Z, k, cU, U, perms)
+
+			dVZj = ansatz_hess_V(Vlist, Wlist, L, Vlist[k] @ Z, k, cU, U, perms, unprojected=unprojected)
 			
 			for i in range(2*eta):
-				Hess[i, :, k, j] = antisymm_to_real(antisymm( Glist[i].conj().T @ dVZj[i] )).reshape(-1)
+				Hess[i, :, k, j] = dVZj[i].reshape(-1) if unprojected else \
+						antisymm_to_real(antisymm( Glist[i].conj().T @ dVZj[i] )).reshape(-1)
 
 	# k in W.
 	for k in range(eta):
 		for j in range(16):
-			# unit vector
-			Z = np.zeros(16)
-			Z[j] = 1
-			Z = real_to_antisymm(np.reshape(Z, (4, 4)))
-			dWZj = ansatz_hess_W(Vlist, Wlist, L, Wlist[k] @ Z, k, cU, U, perms)
+			if unprojected:
+				Z = np.zeros((4, 4), dtype=complex)
+				Z.flat[j] = 1.0
+			else:
+				Z = np.zeros(16)
+				Z[j] = 1
+				Z = real_to_antisymm(np.reshape(Z, (4, 4)))
+
+			dWZj = ansatz_hess_W(Vlist, Wlist, L, Wlist[k] @ Z, k, cU, U, perms, unprojected=unprojected)
 			for i in range(2*eta):
-				Hess[i, :, eta+k, j] = antisymm_to_real(antisymm( Glist[i].conj().T @ dWZj[i] )).reshape(-1)
+				Hess[i, :, eta+k, j] = dWZj[i].reshape(-1) if unprojected else \
+					antisymm_to_real(antisymm( Glist[i].conj().T @ dWZj[i] )).reshape(-1)
     
-	return Hess.reshape((2*eta*16, 2*eta*16))
+	if flatten:
+		return Hess.reshape((2*eta*16, 2*eta*16))
+	else:
+		return Hess
 
 

@@ -63,7 +63,7 @@ def ansatz_grad(V, L, U_tilde, perm):
 	return G
 
 
-def ansatz_grad_vector(Glist, cU, U, L, perms, flatten=True):
+def ansatz_grad_vector(Glist, cU, U, L, perms, flatten=True, unprojected=False):
 	Vlist = Glist[:len(perms)]
 	Wlist = Glist[len(perms):]
 	grads_V = []
@@ -92,16 +92,17 @@ def ansatz_grad_vector(Glist, cU, U, L, perms, flatten=True):
 
 	grad = np.stack(grads_V + grads_W)
 
+	if unprojected:
+		return grad
+
 	# Project onto tangent space.
 	if flatten:
 		return np.stack([antisymm_to_real( 
-			#Glist[j]@
 			antisymm(Glist[j].conj().T @ grad[j]))
 	        for j in range(len(grad))])\
 		.reshape(-1)
 	else:
 		return np.stack([antisymm_to_real(
-			#Glist[j]@
 			antisymm(Glist[j].conj().T @ grad[j]))
 	        for j in range(len(grad))])
 
