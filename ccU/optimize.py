@@ -34,6 +34,6 @@ def retract_unitary_list(vlist, eta):
     Retraction for unitary matrices, with tangent direction represented as anti-symmetric matrices.
     """
     n = len(vlist)
-    eta = np.reshape(eta, (n, 8, 8))
+    eta = np.reshape(eta, (n, 4, 4))
     dvlist = [vlist[j] @ real_to_antisymm(eta[j]) for j in range(n)]
     return np.stack([polar_decomp(vlist[j] + dvlist[j])[0] for j in range(n)])
