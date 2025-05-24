@@ -1,5 +1,5 @@
 import numpy as np
-from ansatz import ansatz_grad
+from ansatz import ansatz_grad, ansatz_grad_vector
 from utils import (
 	otimes, swap_matrix, permute_operation, applyG, applyG_block,
 	partial_trace_keep, antisymm_to_real, antisymm, I2, X, Y, Z,
@@ -13,10 +13,10 @@ def ansatz_hess_single_layer(V, L, Z, U_tilde_, perm):
 	"""
 	G = np.zeros_like(V, dtype=complex)
 	for i in range(L//2):
-		U_tilde = U_tilde_
+		
 		k, l = (perm[2*i], perm[2*i+1])
-
 		for z in range(L//2):
+			U_tilde = U_tilde_
 			if z==i:
 				continue
 
@@ -25,14 +25,14 @@ def ansatz_hess_single_layer(V, L, Z, U_tilde_, perm):
 				if z==j:
 					U_tilde = applyG(Z, k_, l_, L) @ U_tilde
 				else:
-					U_tilde = applyG(V, k_, l_, L) @ U_tilde
+					U_tilde = applyG(V, k_, l_, L) @ U_tilde #!
 
 			for j in list(range(i+1, L//2))[::-1]:
 				k_, l_ = (perm[2*j], perm[2*j+1])
 				if z==j:
 					U_tilde = U_tilde @ applyG(Z, k_, l_, L)
 				else:
-					U_tilde = U_tilde @ applyG(V, k_, l_, L)
+					U_tilde = U_tilde @ applyG(V, k_, l_, L) #!
 
 			# Take partial trace wrt all qubits but k, l.
 			T = partial_trace_keep(U_tilde, [k, l], L)
@@ -151,6 +151,10 @@ def ansatz_hess_V(Vlist, Wlist, L, Z, k, cU, U, perms, unprojected=False):
 		V = Vlist[k]
 		G = project_unitary_tangent(V, G)
 		grad = ansatz_grad(V, L, U_tilde, perms[k]).conj().T # TODO: Check this transpose.
+															 # Also check whether this is 
+															 # consistent with the correct numerical method. 
+		#grad = ansatz_grad_vector(Vlist+Wlist, cU, U, L, perms, flatten=False, unprojected=False)[k]
+
 		G -= 0.5 * (Z @ grad.conj().T @ V + V @ grad.conj().T @ Z)
 		if not np.allclose(Z, project_unitary_tangent(V, Z)):
 			G -= 0.5 * (Z @ V.conj().T + V @ Z.conj().T) @ grad
@@ -241,6 +245,8 @@ def ansatz_hess_W(Vlist, Wlist, L, Z, k, cU, U, perms, unprojected=False):
 		V = Wlist[k]
 		G = project_unitary_tangent(V, G)
 		grad = ansatz_grad(V, L, U_tilde, perms[k]).conj().T # TODO: Check this transpose.
+		#grad = ansatz_grad_vector(Vlist+Wlist, cU, U, L, perms, flatten=False, unprojected=False)[k+len(Vlist)]
+
 		G -= 0.5 * (Z @ grad.conj().T @ V + V @ grad.conj().T @ Z)
 		if not np.allclose(Z, project_unitary_tangent(V, Z)):
 			G -= 0.5 * (Z @ V.conj().T + V @ Z.conj().T) @ grad
