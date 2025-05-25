@@ -227,7 +227,6 @@ def ansatz_hess_W(Vlist, Wlist, L, Z, k, cU, U, perms, unprojected=False):
 		dVlist[i] = dVi if unprojected else  project_unitary_tangent(Vlist[i], dVi)
 
 	# i=k case.
-
 	i = k
 	U_tilde = np.eye(2**(L))
 	for j in range(i+1, len(Wlist)):

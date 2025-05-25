@@ -12,6 +12,9 @@ X = np.array([[0, 1], [1, 0]])
 Y = np.array([[0, -1j], [1j, 0]])
 Z = np.array([[1, 0], [0, -1]])
 
+# TODO: Pre-store the swaps
+# TODO: Turn the 'to_ret' of applyG should be sparse
+
 
 def otimes(matrices):
 	mat = np.eye(1)
@@ -33,6 +36,7 @@ def swap_matrix(n, q1, q2):
 			j = int("".join(binary), 2)
 			swap[i, i], swap[i, j] = 0, 1  # Swap rows in identity
 	return swap
+
 
 def permute_operation(U, k, l, N):
 	"""

@@ -9,9 +9,8 @@ from utils import (
 def ansatz(Glist, U, L, perms):
 	"""
 		Our circuit Ansatz will wrap the time evolution operator U
-		through couplings of neighbour interactions and the ancilla 
-		qubit. For each permutation of neighbours, there is another 
-		three qubit gate V in Vlist. 
+		through couplings of neighbour interactions. For each permutation 
+		of neighbours, there is another two qubit gate G in Glist. 
 	"""
 	assert len(Glist) == 2*len(perms)
 	assert Glist[0].shape == (4, 4) # 2 qubit gate
@@ -38,7 +37,7 @@ def ansatz_grad(V, L, U_tilde, perm):
 		U_tilde_ = U_tilde
 		k, l = perm[2*i], perm[2*i+1]
 
-    	# Contract U_tilde and V gates for all perm qubits but k,l,m.
+    	# Contract U_tilde and V gates for all perm qubits but k and l.
     	# Careful about adding it before or after.
 
 		for j in range(i):
@@ -52,7 +51,6 @@ def ansatz_grad(V, L, U_tilde, perm):
 		# Take partial trace wrt all qubits but k, l.
 		T = partial_trace_keep(U_tilde_, [k, l], L)
 		
-		# !ANOTHER FIX:
 		if k>l:
 			# Partial trace interprets the qubit l as the first qubit of 
 			# the resulting two qubit gate. We need to fix that.
