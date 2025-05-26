@@ -256,11 +256,6 @@ def ansatz_hess_W(Vlist, Wlist, L, Z, k, cU, U, perms, unprojected=False):
 def ansatz_hessian_matrix(Glist, cU, U, L, perms, flatten=True, unprojected=False):
 	"""
 	Construct the Hessian matrix.
-
-	Major TODOs:
-	-> Modify the conj().T such that only cU is transposed, none of the
-	V,Ws are transposed but then at the end we transpose the individual
-	df/dG elements (after the sum, before the stacking).
 	"""
 	Vlist = Glist[:len(perms)]
 	Wlist = Glist[len(perms):]

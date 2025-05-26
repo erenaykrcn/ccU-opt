@@ -27,6 +27,7 @@ def swap_matrix(n, q1, q2):
 	"""
 	Creates a swap matrix for qubits q1 and q2 in an n-qubit system.
 	"""
+
 	dim = 2 ** n
 	swap = np.eye(dim)
 	for i in range(dim):
@@ -36,7 +37,7 @@ def swap_matrix(n, q1, q2):
 			j = int("".join(binary), 2)
 			swap[i, i], swap[i, j] = 0, 1  # Swap rows in identity
 	return swap
-
+	
 
 def permute_operation(U, k, l, N):
 	"""
@@ -46,9 +47,9 @@ def permute_operation(U, k, l, N):
 	if k == 0 and l == 1:
 		return U  # Already in the correct position
 	# Swap k to position 1
-	S1 = swap_matrix(N, 0, k) if k != 0 else np.eye(2 ** N)
+	S1 = swap_matrix(N, 0, k) if k != 0 else np.identity(2 ** N)
 	# Swap l to position 2
-	S2 = swap_matrix(N, 1, l) if l != 1 else np.eye(2 ** N)
+	S2 = swap_matrix(N, 1, l) if l != 1 else np.identity(2 ** N)
 	# Apply swaps before and after U
 	return S1 @ S2 @ U @ S2 @ S1
 
